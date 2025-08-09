@@ -119,12 +119,13 @@ class CognitiveLoadAnalyzer():
 
         # Keystroke (error rate)
         low, medium, high = thresholds["error_rate"]
-        er = keystroke_data["error_rate"]
-        if er <= low:
+        error_rate = keystroke_data["error_rate"]
+
+        if error_rate <= low:
             self.cognitive_load["score"] += 0
-        elif er <= medium:
+        elif error_rate <= medium:
             self.cognitive_load["score"] += 1
-        elif er <= high:
+        elif error_rate <= high:
             self.cognitive_load["score"] += 2
         else:
             self.cognitive_load["score"] += 3
@@ -134,12 +135,13 @@ class CognitiveLoadAnalyzer():
 
         # Keystroke (pause rate)
         low, medium, high = thresholds["pause_rate"]
-        pr = keystroke_data["pause_rate"]
-        if pr <= low:
+        pause_rate = keystroke_data["pause_rate"]
+
+        if pause_rate <= low:
             self.cognitive_load["score"] += 0
-        elif pr <= medium:
+        elif pause_rate <= medium:
             self.cognitive_load["score"] += 1
-        elif pr <= high:
+        elif pause_rate <= high:
             self.cognitive_load["score"] += 2
         else:
             self.cognitive_load["score"] += 3
@@ -147,13 +149,13 @@ class CognitiveLoadAnalyzer():
         pause_score = self.cognitive_load["score"]
         self.cognitive_load["score"] = 0
 
-        keystroke_score = typing_speed_score + error_rate_score + pause_score
-        keystroke_score_combined = keystroke_score * weights["keystroke"]
+        keystroke_data_scores = typing_speed_score + error_rate_score + pause_score
+        keystroke_score = keystroke_data_scores * weights["keystroke"]
 
-        self.cognitive_load["score"] = int(blink_score + yawn_score + gaze_score + expression_score + keystroke_score_combined)
+        self.cognitive_load["score"] = int(blink_score + yawn_score + gaze_score + expression_score + keystroke_score)
         return self.cognitive_load["score"]
 
-    def give_label(self, score):
+    def get_score_and_label(self, score):
         if score <= 5:
             return score, self.cognitive_load["label"][0]
         elif score <= 10:

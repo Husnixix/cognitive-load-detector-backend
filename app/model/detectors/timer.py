@@ -14,5 +14,5 @@ class Timer:
 
     def stop_timer(self):
         self.end_time = datetime.now()
-        return self.start_time.strftime("%Y-%m-%d %H:%M:%S")
+        return self.end_time.strftime("%Y-%m-%d %H:%M:%S")
 

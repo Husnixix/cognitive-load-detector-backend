@@ -27,7 +27,7 @@ class CognitiveLoadService:
 
         threading.Thread(target=self.facial_cue_analyzer.start_facial_cue_detector, daemon=True).start()
         threading.Thread(target=self.keystroke_analyzer.start_keystroke_tracker, daemon=True).start()
-        self.snapshot_thread = threading.Thread(target=self.snapshot_thread, daemon=True)
+        self.snapshot_thread = threading.Thread(target=self.snapshot_loop(), daemon=True)
         self.snapshot_thread.start()
 
     def snapshot_loop(self):
@@ -40,12 +40,12 @@ class CognitiveLoadService:
             keystroke_data = self.keystroke_analyzer.keystroke_snap_shot_and_reset()
 
             cognitive_score = self.cognitive_load_analyzer.score_feature(facial_data, keystroke_data)
-            cognitive_status = self.cognitive_load_analyzer.give_label(cognitive_score)
+            cognitive_status = self.cognitive_load_analyzer.get_score_and_label(cognitive_score)
 
             print(f"\n[SNAPSHOT] {start_time} → {end_time}")
             print("Facial:", facial_data)
             print("Keystrokes:", keystroke_data)
-            print("Score:", cognitive_score, "Status:", cognitive_status)
+            print("Status:", cognitive_status)
 
     def stop_detecting_cognitive_load(self):
         self.is_detecting = False
@@ -58,7 +58,7 @@ class CognitiveLoadService:
         keystroke_data = self.keystroke_analyzer.keystroke_snap_shot_and_reset()
 
         cognitive_score = self.cognitive_load_analyzer.score_feature(facial_data, keystroke_data)
-        cognitive_status = self.cognitive_load_analyzer.give_label(cognitive_score)
+        cognitive_status = self.cognitive_load_analyzer.get_score_and_label(cognitive_score)
 
         self.facial_cue_analyzer.stop_facial_cue_detector()
         self.keystroke_analyzer.stop_keystroke_tracker()
@@ -66,6 +66,6 @@ class CognitiveLoadService:
         print(f"\n[FINAL SNAPSHOT] {start_time} → {end_time}")
         print("Facial:", facial_data)
         print("Keystrokes:", keystroke_data)
-        print("Score:", cognitive_score, "Status:", cognitive_status)
+        print("Status:", cognitive_status)
 
 
