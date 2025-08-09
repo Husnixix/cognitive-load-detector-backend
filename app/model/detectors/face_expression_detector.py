@@ -13,7 +13,6 @@ expression_counts = {
 }
 
 last_expression = "neutral"
-confidence_threshold = 0.5  # Correct spelling
 
 def detect_expression(frame):
     global last_expression
@@ -36,9 +35,3 @@ def detect_expression(frame):
         last_expression = "no_face"
 
     return expression_counts, last_expression
-
-
-def reset_expression_counts():
-    global expression_counts
-    for key in expression_counts:
-        expression_counts[key] = 0
