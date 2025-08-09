@@ -45,11 +45,16 @@ class FacialCueAnalyzer:
                 "no_face": 0
             }
         }
+        self.running = False
+        self.facial_cue_snap_shot_and_reset()
+        self.reset_data()
+
 
     def start_facial_cue_detector(self):
+        self.running = True
         capture = cv2.VideoCapture(0)
 
-        while True:
+        while self.running:
             ret, frame = capture.read()
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
@@ -152,17 +157,45 @@ class FacialCueAnalyzer:
             cv2.imshow("Facial Cue Detection", frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
+                self.stop_facial_cue_detector()
                 break
 
         capture.release()
         cv2.destroyAllWindows()
         face_detector.close()
 
-        print(f"Total blinks detected: {self.facial_cues_data['blink_counts']}")
-        print(f"Total yawns detected: {self.facial_cues_data['yawn_counts']}")
-        print(f"Gaze direction detected: {self.facial_cues_data['gaze_direction_counts']}")
-        print(f"Face expression detected: {self.facial_cues_data['face_expression_counts']}")
+    def facial_cue_snap_shot_and_reset(self):
+        facial_cue_snap = self.facial_cues_data.copy()
+        self.reset_data()
+        return facial_cue_snap
 
+    def reset_data(self):
+        self.facial_cues_data = {
+            "blink_counts": 0,
+            "yawn_counts": 0,
+            "gaze_direction_counts": {
+                "left": 0,
+                "right": 0,
+                "center": 0,
+                "no_gaze": 0
+            },
+            "face_expression_counts": {
+                "happy": 0,
+                "sad": 0,
+                "angry": 0,
+                "surprise": 0,
+                "neutral": 0,
+                "disgust": 0,
+                "fear": 0,
+                "no_face": 0
+            }
+        }
+
+    def stop_facial_cue_detector(self):
+        self.running = False
+        self.reset_data()
+        cv2.destroyAllWindows()
+        face_detector.close()
 
 
 
