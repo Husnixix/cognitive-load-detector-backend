@@ -1,7 +1,12 @@
+
+from app.config.configure_database import ConfigureDatabase
 from app.service.cognitive_load_service import CognitiveLoadService
 import time
 
+
+
 def main():
+
     cognitive_detector = CognitiveLoadService()
     print("Starting cognitive load detector... ")
     cognitive_detector.start_detecting_cognitive_load()

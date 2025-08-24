@@ -30,11 +30,11 @@ class CognitiveLoadAnalyzer():
         if facial_cue_data["blink_counts"] <= low:
             self.cognitive_load["score"] += 0
         elif facial_cue_data["blink_counts"] <= medium:
-            self.cognitive_load["score"] += 1
+            self.cognitive_load["score"] += 50
         elif facial_cue_data["blink_counts"] <= high:
-            self.cognitive_load["score"] += 2
+            self.cognitive_load["score"] += 80
         else:
-            self.cognitive_load["score"] += 3
+            self.cognitive_load["score"] += 100
 
         blink_score = self.cognitive_load["score"] * weights["blinking"]
         self.cognitive_load["score"] = 0
@@ -44,11 +44,11 @@ class CognitiveLoadAnalyzer():
         if facial_cue_data["yawn_counts"] <= low:
             self.cognitive_load["score"] += 0
         elif facial_cue_data["yawn_counts"] <= medium:
-            self.cognitive_load["score"] += 1
+            self.cognitive_load["score"] += 50
         elif facial_cue_data["yawn_counts"] <= high:
-            self.cognitive_load["score"] += 2
+            self.cognitive_load["score"] += 80
         else:
-            self.cognitive_load["score"] += 3
+            self.cognitive_load["score"] += 100
 
         yawn_score = self.cognitive_load["score"] * weights["yawning"]
         self.cognitive_load["score"] = 0
@@ -64,11 +64,11 @@ class CognitiveLoadAnalyzer():
         if gaze_center_ratio >= high:
             self.cognitive_load["score"] += 0
         elif gaze_center_ratio >= medium:
-            self.cognitive_load["score"] += 1
+            self.cognitive_load["score"] += 20
         elif gaze_center_ratio >= low:
-            self.cognitive_load["score"] += 2
+            self.cognitive_load["score"] += 50
         else:
-            self.cognitive_load["score"] += 3
+            self.cognitive_load["score"] += 100
 
         gaze_score = self.cognitive_load["score"] * weights["gaze"]
         self.cognitive_load["score"] = 0
@@ -93,11 +93,11 @@ class CognitiveLoadAnalyzer():
         if negative_expression_ratio <= low:
             self.cognitive_load["score"] += 0
         elif negative_expression_ratio <= medium:
-            self.cognitive_load["score"] += 1
+            self.cognitive_load["score"] += 50
         elif negative_expression_ratio <= high:
-            self.cognitive_load["score"] += 2
+            self.cognitive_load["score"] += 80
         else:
-            self.cognitive_load["score"] += 3
+            self.cognitive_load["score"] += 100
 
         expression_score = self.cognitive_load["score"] * weights["expression"]
         self.cognitive_load["score"] = 0
@@ -108,11 +108,11 @@ class CognitiveLoadAnalyzer():
         if ts >= high:
             self.cognitive_load["score"] += 0
         elif ts >= medium:
-            self.cognitive_load["score"] += 1
+            self.cognitive_load["score"] += 20
         elif ts >= low:
-            self.cognitive_load["score"] += 2
+            self.cognitive_load["score"] += 60
         else:
-            self.cognitive_load["score"] += 3
+            self.cognitive_load["score"] += 100
 
         typing_speed_score = self.cognitive_load["score"]
         self.cognitive_load["score"] = 0
@@ -124,11 +124,11 @@ class CognitiveLoadAnalyzer():
         if error_rate <= low:
             self.cognitive_load["score"] += 0
         elif error_rate <= medium:
-            self.cognitive_load["score"] += 1
+            self.cognitive_load["score"] += 20
         elif error_rate <= high:
-            self.cognitive_load["score"] += 2
+            self.cognitive_load["score"] += 60
         else:
-            self.cognitive_load["score"] += 3
+            self.cognitive_load["score"] += 100
 
         error_rate_score = self.cognitive_load["score"]
         self.cognitive_load["score"] = 0
@@ -140,25 +140,25 @@ class CognitiveLoadAnalyzer():
         if pause_rate <= low:
             self.cognitive_load["score"] += 0
         elif pause_rate <= medium:
-            self.cognitive_load["score"] += 1
+            self.cognitive_load["score"] += 20
         elif pause_rate <= high:
-            self.cognitive_load["score"] += 2
+            self.cognitive_load["score"] += 60
         else:
-            self.cognitive_load["score"] += 3
+            self.cognitive_load["score"] += 100
 
         pause_score = self.cognitive_load["score"]
         self.cognitive_load["score"] = 0
 
-        keystroke_data_scores = typing_speed_score + error_rate_score + pause_score
+        keystroke_data_scores = ((typing_speed_score + error_rate_score + pause_score)/3)
         keystroke_score = keystroke_data_scores * weights["keystroke"]
 
         self.cognitive_load["score"] = int(blink_score + yawn_score + gaze_score + expression_score + keystroke_score)
         return self.cognitive_load["score"]
 
     def get_score_and_label(self, score):
-        if score <= 5:
+        if score <= 40:
             return score, self.cognitive_load["label"][0]
-        elif score <= 10:
+        elif score <= 70:
             return score, self.cognitive_load["label"][1]
         else:
             return score, self.cognitive_load["label"][2]
