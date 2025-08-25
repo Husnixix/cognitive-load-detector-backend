@@ -1,4 +1,4 @@
-from app.service.cognitive_load_service import CognitiveLoadService
+from app.application.services.cognitive_load_service import CognitiveLoadService
 import time
 
 def main():
@@ -9,8 +9,6 @@ def main():
         time.sleep(90)
     except KeyboardInterrupt:
         print("Stopping cognitive load detector...")
-
-
     cognitive_detector.stop_detecting_cognitive_load()
     print("Finished cognitive load detector...")
 
