@@ -4,7 +4,6 @@
 
 > ⚠️ Note: Some packages may not work properly on Python 3.10 or higher. Recommended version: **Python 3.9**.
 
----
 
 ## Backend Setup
 
@@ -61,18 +60,13 @@
    http://localhost:8000
    ```
 
----
-
 ## Frontend Setup
 
-1. **Clone the frontend repository**
-   ```bash
-   git clone https://github.com/husni-haniffa/cognitive-load-detection-frontend
-   ```
+To complete the full application setup, you'll also need to configure the backend:
 
-2. **Navigate to the project directory**
-   ```bash
-   cd cognitive-load-detection-frontend
-   ```
+**Frontend Repository:** [cognitive-load-detector-frontend](https://github.com/husni-haniffa/cognitive-load-detector-frontend)
+
+Please follow the setup instructions in the frontend repository to get the complete system running.
+
 
 3. **Follow the setup instructions** in the frontend repository to complete the full system.
