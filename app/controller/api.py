@@ -1,15 +1,30 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 import logging
+from dotenv import load_dotenv, find_dotenv
 
-from app.application.services.cognitive_load_service import CognitiveLoadService
 from app.controller.schemas import cognitive_state_to_dict
+from app.application.services.cognitive_load_service import CognitiveLoadService
+from app.domain.services.cognitive_load_analyzer import CognitiveLoadAnalyzer
+from app.infrastructure.repositories.mongo_cognitive_state_repository import MongoCognitiveStateRepository
+from app.infrastructure.capture.opencv_facial_cue_detector import OpenCVFacialCueDetector
+from app.infrastructure.capture.keystroke_tracker_impl import SystemKeystrokeTracker
+from app.infrastructure.time.system_clock import SystemClock
 
 app = Flask(__name__)
 CORS(app)
 
+# Load env variables from nearest .env regardless of CWD
+load_dotenv(find_dotenv())
+
 # Single service instance for API reads. We do NOT start detection here to avoid side effects.
-service = CognitiveLoadService()
+service = CognitiveLoadService(
+    repository=MongoCognitiveStateRepository(),
+    facial_detector=OpenCVFacialCueDetector(),
+    keystroke_tracker=SystemKeystrokeTracker(),
+    analyzer=CognitiveLoadAnalyzer(),
+    clock=SystemClock(),
+)
 
 
 @app.get("/latest")

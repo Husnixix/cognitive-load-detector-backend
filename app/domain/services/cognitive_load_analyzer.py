@@ -1,3 +1,5 @@
+# Moved from app.model.cognitive_load_analyzer to domain services as pure domain logic
+
 thresholds = {
     "blink_count": (10, 15, 20),
     "yawn_count": (1, 2, 3),
@@ -25,7 +27,6 @@ class CognitiveLoadAnalyzer:
         }
 
     def score_feature(self, facial_cue_data, keystroke_data):
-
         # Blinking
         low, medium, high = thresholds["blink_count"]
         if facial_cue_data["blink_counts"] <= low:
