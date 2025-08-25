@@ -61,7 +61,7 @@
 
 ## Frontend Setup
 
-To complete the full application setup, you'll also need to configure the backend:
+To complete the full application setup, you'll also need to configure the frontend:
 
 **Frontend Repository:** [cognitive-load-detector-frontend](https://github.com/husni-haniffa/cognitive-load-detector-frontend)
 
