@@ -1,22 +1,24 @@
+import logging
+import time
+import threading
+
+
 from app.model.detectors.timer import Timer
 from app.model.facial_cue_analyzer import FacialCueAnalyzer
 from app.model.keystroke_analyzer import KeystrokeAnalyzer
-from app.model.cognitive_load_anayzler import CognitiveLoadAnalyzer
-import time
-import threading
-from datetime import datetime
-import threading
+from app.model.cognitive_load_analyzer import CognitiveLoadAnalyzer
 
-from app.repositary.cognitive_load_entity import CognitiveState
-from app.repositary.sql_cognitive_state_repository import SQLCognitiveStateRepository
+from app.domain.entities.cognitive_state import CognitiveState
+from app.infrastructure.repositories.cognitive_state_repository import MongoCognitiveStateRepository
 
 
 class CognitiveLoadService:
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
         self.facial_cue_analyzer = FacialCueAnalyzer()
         self.keystroke_analyzer = KeystrokeAnalyzer()
         self.cognitive_load_analyzer = CognitiveLoadAnalyzer()
-        self.respositary = SQLCognitiveStateRepository()
+        self.respositary = MongoCognitiveStateRepository()
         self.timer = Timer()
         self.is_detecting = False
         self.interval = 60
@@ -55,11 +57,11 @@ class CognitiveLoadService:
                 cognitive_state_data=cognitive_status,
             )
             self.respositary.save(cognitive_state)
-            print("Database done")
-            print(f"\n[SNAPSHOT] {start_time} → {end_time}")
-            print("Facial:", facial_data)
-            print("Keystrokes:", keystroke_data)
-            print("Status:", cognitive_status)
+            self.logger.info("Database done")
+            self.logger.info(f"[SNAPSHOT] {start_time} → {end_time}")
+            self.logger.info(f"Facial: {facial_data}")
+            self.logger.info(f"Keystrokes: {keystroke_data}")
+            self.logger.info(f"Status: {cognitive_status}")
 
     def stop_detecting_cognitive_load(self):
         self.is_detecting = False
@@ -85,11 +87,18 @@ class CognitiveLoadService:
             cognitive_state_data=cognitive_status,
         )
         self.respositary.save(cognitive_state)
-        print("Database done")
+        self.logger.info("Database done")
 
-        print(f"\n[FINAL SNAPSHOT] {start_time} → {end_time}")
-        print("Facial:", facial_data)
-        print("Keystrokes:", keystroke_data)
-        print("Status:", cognitive_status)
+        self.logger.info(f"[FINAL SNAPSHOT] {start_time} → {end_time}")
+        self.logger.info(f"Facial: {facial_data}")
+        self.logger.info(f"Keystrokes: {keystroke_data}")
+        self.logger.info(f"Status: {cognitive_status}")
 
+    def get_latest(self):
+        """Read-only accessor for latest cognitive state."""
+        return self.respositary.get_latest_cognitive_state()
+
+    def get_history(self):
+        """Read-only accessor for full cognitive state history (most recent first)."""
+        return self.respositary.get_cognitive_state_history()
 

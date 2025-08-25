@@ -7,24 +7,25 @@ from app.model.detectors.gaze_detector import extract_iris_center, extract_iris_
     draw_iris_outline, draw_iris_center
 from app.model.detectors.yawn_detector import extract_mouth_landmarks, calculate_mar, draw_mouth_state, detect_yawn
 
-blink_counts = 0
-blink_count_frames = 0
-
-yawn_counts = 0
-yaw_count_frames = 0
-
-frame_count = 0
-gaze_sample_rate = 15
-gaze_left_count = 0
-gaze_right_count = 0
-gaze_center_count = 0
-no_gaze = 0
-
-
-face_detector = FaceMeshDetector()
-
 class FacialCueAnalyzer:
     def __init__(self):
+        # Counters (previously module-level globals)
+        self.blink_counts = 0
+        self.blink_count_frames = 0
+
+        self.yawn_counts = 0
+        self.yaw_count_frames = 0
+
+        self.frame_count = 0
+        self.gaze_sample_rate = 15
+        self.gaze_left_count = 0
+        self.gaze_right_count = 0
+        self.gaze_center_count = 0
+        self.no_gaze = 0
+
+        # Detector instance (was module-level)
+        self.face_detector = FaceMeshDetector()
+
         self.facial_cues_data = {
             "blink_counts": 0,
             "yawn_counts": 0,
@@ -60,7 +61,7 @@ class FacialCueAnalyzer:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
 
-            frame, face_landmarks = face_detector.detect_face_landmarks(frame)
+            frame, face_landmarks = self.face_detector.detect_face_landmarks(frame)
             if face_landmarks:
                 for face_landmark in face_landmarks:
                     image_height, image_width, _ = frame.shape
@@ -73,9 +74,8 @@ class FacialCueAnalyzer:
                     draw_eye_outline(frame, right_eye_points)
                     draw_eye_outline(frame, left_eye_points)
 
-                    global blink_count_frames, blink_counts
-                    blink_detected, blink_count_frames, blink_counts = detect_blinks(
-                        right_eye_ear, left_eye_ear, blink_count_frames, blink_counts
+                    blink_detected, self.blink_count_frames, self.blink_counts = detect_blinks(
+                        right_eye_ear, left_eye_ear, self.blink_count_frames, self.blink_counts
                     )
 
                     if blink_detected:
@@ -91,8 +91,9 @@ class FacialCueAnalyzer:
                     mar = calculate_mar(mouth_points)
                     draw_mouth_state(frame, mouth_points, mar)
 
-                    global yaw_count_frames, yawn_counts
-                    yaw_count_frames, yawn_counts, yawn_detected = detect_yawn(mar, yaw_count_frames, yawn_counts)
+                    self.yaw_count_frames, self.yawn_counts, yawn_detected = detect_yawn(
+                        mar, self.yaw_count_frames, self.yawn_counts
+                    )
 
                     if yawn_detected:
                         print("Yawn detected")
@@ -115,22 +116,21 @@ class FacialCueAnalyzer:
                     cv2.putText(frame, f"Gaze: {gaze_direction}",(10, 90),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6,gaze_color, 2)
 
-                    global frame_count, gaze_sample_rate, gaze_left_count, gaze_right_count, gaze_center_count, no_gaze
-                    if frame_count % gaze_sample_rate == 0:
+                    if self.frame_count % self.gaze_sample_rate == 0:
                         if gaze_direction == 'Left':
-                            gaze_left_count += 1
+                            self.gaze_left_count += 1
                             self.facial_cues_data["gaze_direction_counts"]["left"] += 1
                         elif gaze_direction == 'Right':
-                            gaze_right_count += 1
+                            self.gaze_right_count += 1
                             self.facial_cues_data["gaze_direction_counts"]["right"] += 1
                         elif gaze_direction == 'Center':
-                            gaze_center_count += 1
+                            self.gaze_center_count += 1
                             self.facial_cues_data["gaze_direction_counts"]["center"] += 1
                         else:
-                            no_gaze += 1
+                            self.no_gaze += 1
                             self.facial_cues_data["gaze_direction_counts"]["no_gaze"] += 1
 
-                    frame_count += 1
+                    self.frame_count += 1
 
                     draw_iris_outline(frame, right_iris_points)
                     draw_iris_outline(frame, left_iris_points)
@@ -162,7 +162,7 @@ class FacialCueAnalyzer:
 
         capture.release()
         cv2.destroyAllWindows()
-        face_detector.close()
+        self.face_detector.close()
 
     def facial_cue_snap_shot_and_reset(self):
         facial_cue_snap = self.facial_cues_data.copy()
@@ -195,7 +195,7 @@ class FacialCueAnalyzer:
         self.running = False
         self.reset_data()
         cv2.destroyAllWindows()
-        face_detector.close()
+        self.face_detector.close()
 
 
 

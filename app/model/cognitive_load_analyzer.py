@@ -16,7 +16,8 @@ weights = {
     "keystroke": 0.05,
 }
 
-class CognitiveLoadAnalyzer():
+
+class CognitiveLoadAnalyzer:
     def __init__(self):
         self.cognitive_load = {
             "score": 0,

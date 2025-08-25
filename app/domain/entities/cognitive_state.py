@@ -2,6 +2,7 @@ import datetime
 from dataclasses import dataclass
 from typing import Optional
 
+
 @dataclass
 class CognitiveState:
     start_time: datetime.datetime
@@ -10,6 +11,3 @@ class CognitiveState:
     keystroke_data: dict
     cognitive_state_data: dict
     id: Optional[str] = None
-
-
-
