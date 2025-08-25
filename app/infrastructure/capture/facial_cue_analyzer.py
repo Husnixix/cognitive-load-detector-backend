@@ -1,11 +1,11 @@
 import cv2
 
-from app.model.detectors.blink_detector import extract_eye_landmarks, calculate_ear, draw_eye_outline, detect_blinks
-from app.model.detectors.face_expression_detector import expression_counts, detect_expression
-from app.model.detectors.face_mesh_detector import FaceMeshDetector
-from app.model.detectors.gaze_detector import extract_iris_center, extract_iris_landmarks, analyze_gaze_for_eye, \
+from app.infrastructure.capture.detectors.blink_detector import extract_eye_landmarks, calculate_ear, draw_eye_outline, detect_blinks
+from app.infrastructure.capture.detectors.face_expression_detector import expression_counts, detect_expression
+from app.infrastructure.capture.detectors.face_mesh_detector import FaceMeshDetector
+from app.infrastructure.capture.detectors.gaze_detector import extract_iris_center, extract_iris_landmarks, analyze_gaze_for_eye, \
     draw_iris_outline, draw_iris_center
-from app.model.detectors.yawn_detector import extract_mouth_landmarks, calculate_mar, draw_mouth_state, detect_yawn
+from app.infrastructure.capture.detectors.yawn_detector import extract_mouth_landmarks, calculate_mar, draw_mouth_state, detect_yawn
 
 class FacialCueAnalyzer:
     def __init__(self):

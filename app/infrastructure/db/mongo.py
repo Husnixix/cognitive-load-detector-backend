@@ -10,9 +10,14 @@ class ConfigureDatabase:
         self.client = None
         self.database = None
         try:
-            # Read from env with safe defaults to preserve existing behavior
-            uri = uri or os.getenv("MONGODB_URI", "mongodb+srv://husni:husni@cluster0.7kwciz1.mongodb.net/")
-            database_name = database_name or os.getenv("MONGODB_DB", "cognitive_load_detection")
+            # Read from env or explicit params. No hardcoded credentials.
+            uri = uri or os.getenv("MONGODB_URI")
+            database_name = database_name or os.getenv("MONGODB_DB")
+
+            if not uri:
+                raise RuntimeError("MONGODB_URI not configured. Set env var or pass uri explicitly.")
+            if not database_name:
+                raise RuntimeError("MONGODB_DB not configured. Set env var or pass database_name explicitly.")
 
             self.client = MongoClient(uri, serverSelectionTimeoutMS=5000)  # 5 sec timeout
             self.client.admin.command('ping')
