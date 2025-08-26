@@ -1,4 +1,6 @@
 import cv2
+import os
+import time
 
 from app.infrastructure.capture.detectors.blink_detector import extract_eye_landmarks, calculate_ear, draw_eye_outline, detect_blinks
 from app.infrastructure.capture.detectors.face_expression_detector import expression_counts, detect_expression
@@ -25,6 +27,13 @@ class FacialCueAnalyzer:
 
         # Detector instance (was module-level)
         self.face_detector = FaceMeshDetector()
+        # Camera handle stored on instance for coordinated cleanup
+        self.capture = None
+        # Headless/GUI control via env (default to headless for API)
+        self.show_gui = os.getenv("CLD_SHOW_GUI", "0").lower() in ("1", "true", "yes")
+        # Periodic capture refresh to avoid long-running freezes
+        self.refresh_interval_sec = int(os.getenv("CLD_CAPTURE_REFRESH_SEC", "60"))
+        self._last_refresh = time.time()
 
         self.facial_cues_data = {
             "blink_counts": 0,
@@ -53,12 +62,25 @@ class FacialCueAnalyzer:
 
     def start_facial_cue_detector(self):
         self.running = True
-        capture = cv2.VideoCapture(0)
+        # Prefer DirectShow on Windows for faster open/close
+        try:
+            self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        except Exception:
+            self.capture = cv2.VideoCapture(0)
+        # Reduce internal buffering where supported
+        try:
+            self.capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        except Exception:
+            pass
 
         while self.running:
-            ret, frame = capture.read()
+            ret, frame = self.capture.read() if self.capture is not None else (False, None)
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
+                break
+
+            # Quick exit path if stop requested to reduce latency
+            if not self.running:
                 break
 
             frame, face_landmarks = self.face_detector.detect_face_landmarks(frame)
@@ -154,14 +176,38 @@ class FacialCueAnalyzer:
                     if last_expression in self.facial_cues_data["face_expression_counts"]:
                         self.facial_cues_data["face_expression_counts"][last_expression] += 1
 
-            cv2.imshow("Facial Cue Detection", frame)
+            if self.show_gui:
+                cv2.imshow("Facial Cue Detection", frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    self.stop_facial_cue_detector()
+                    break
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                self.stop_facial_cue_detector()
-                break
+            # Periodic capture refresh to avoid freezing after long runs
+            if self.refresh_interval_sec > 0 and (time.time() - self._last_refresh) >= self.refresh_interval_sec:
+                # Re-open the camera quickly; keep processing loop alive
+                if self.capture is not None:
+                    try:
+                        self.capture.release()
+                    except Exception:
+                        pass
+                try:
+                    self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+                except Exception:
+                    self.capture = cv2.VideoCapture(0)
+                try:
+                    self.capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                except Exception:
+                    pass
+                self._last_refresh = time.time()
 
-        capture.release()
-        cv2.destroyAllWindows()
+        # Cleanup performed in the same thread that created the resources
+        if self.capture is not None:
+            try:
+                self.capture.release()
+            finally:
+                self.capture = None
+        if self.show_gui:
+            cv2.destroyAllWindows()
         self.face_detector.close()
 
     def facial_cue_snap_shot_and_reset(self):
@@ -192,10 +238,10 @@ class FacialCueAnalyzer:
         }
 
     def stop_facial_cue_detector(self):
+        # Only signal stop and reset data. Cleanup happens in the worker thread
+        # to avoid cross-thread OpenCV GUI operations which can freeze on Windows.
         self.running = False
         self.reset_data()
-        cv2.destroyAllWindows()
-        self.face_detector.close()
 
 
 
