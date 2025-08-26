@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import logging
 from dotenv import load_dotenv, find_dotenv
@@ -44,6 +44,31 @@ def get_history():
     history = service.get_history() or []
     payload = [cognitive_state_to_dict(item) for item in history]
     return jsonify({"data": payload, "count": len(payload), "success": True}), 200
+
+
+@app.post("/start")
+def start_detection():
+    try:
+        # Avoid double-start
+        if getattr(service, "is_detecting", False):
+            return jsonify({"success": True, "message": "Detection already running"}), 200
+
+        service.start_detecting_cognitive_load()
+        return jsonify({"success": True, "message": "Detection started"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.post("/stop")
+def stop_detection():
+    try:
+        if not getattr(service, "is_detecting", False):
+            return jsonify({"success": True, "message": "Detection already stopped"}), 200
+
+        service.stop_detecting_cognitive_load()
+        return jsonify({"success": True, "message": "Detection stopped"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 if __name__ == "__main__":
