@@ -1,5 +1,3 @@
-# Moved from app.model.cognitive_load_analyzer to domain services as pure domain logic
-
 thresholds = {
     "blink_count": (10, 15, 20),
     "yawn_count": (1, 2, 3),
@@ -18,8 +16,7 @@ weights = {
     "keystroke": 0.05,
 }
 
-
-class CognitiveLoadAnalyzer:
+class CognitiveLoadAlgorithm:
     def __init__(self):
         self.cognitive_load = {
             "score": 0,

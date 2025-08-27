@@ -1,10 +1,8 @@
-from typing import List, Optional
+from typing import Optional, List
+from app.infrastructure.database.ConfigureDatabase import ConfigureDatabase
+from app.infrastructure.entities.cognitive_load_entity import CognitiveState
 
-from app.infrastructure.db.mongo import ConfigureDatabase
-from app.domain.entities.cognitive_state import CognitiveState
-
-
-class MongoCognitiveStateRepository:
+class CognitiveLoadRepository:
     def __init__(self):
         self.collection = ConfigureDatabase().get_cognitive_states_collection("cognitive_states")
 
