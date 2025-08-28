@@ -6,7 +6,6 @@ from app.domain.algorithm.cognitive_load_algorithm import CognitiveLoadAlgorithm
 from app.infrastructure.entities.cognitive_load_entity import CognitiveState
 from app.infrastructure.repository.cognitive_load_respository import CognitiveLoadRepository
 
-
 class CognitiveLoadDetector:
     def __init__(self):
         self.facial_cue_detector = FacialCueDetector()
@@ -21,7 +20,6 @@ class CognitiveLoadDetector:
         self._keystroke_thread = None
         self._detection_thread = None
         self._stop_event = threading.Event()
-
 
     def start_detectors(self):
         if self.is_detecting:
@@ -62,10 +60,7 @@ class CognitiveLoadDetector:
                 cognitive_state_data=cognitive_state_data,
             )
             self.repository.save(cognitive_state)
-            # Advance the window start to the most recent end
             self.start_time = end_time
-
-
 
     def stop_detectors(self):
         self.is_detecting = False
@@ -84,7 +79,6 @@ class CognitiveLoadDetector:
         self._facial_cue_thread = None
         self._keystroke_thread = None
         self._detection_thread = None
-
 
     def get_latest_state(self):
         return self.repository.get_latest_cognitive_state()

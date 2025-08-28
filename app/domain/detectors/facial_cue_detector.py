@@ -11,23 +11,17 @@ from app.domain.dependencies.yawn_detector import extract_mouth_landmarks, calcu
 
 class FacialCueDetector:
     def __init__(self):
-        # Counters (previously module-level globals)
         self.blink_counts = 0
         self.blink_count_frames = 0
-
         self.yawn_counts = 0
         self.yaw_count_frames = 0
-
         self.frame_count = 0
         self.gaze_sample_rate = 15
         self.gaze_left_count = 0
         self.gaze_right_count = 0
         self.gaze_center_count = 0
         self.no_gaze = 0
-
-        # Detector instance (was module-level)
         self.face_detector = FaceMeshDetector()
-
         self.facial_cues_data = {
             "blink_counts": 0,
             "yawn_counts": 0,
@@ -52,16 +46,37 @@ class FacialCueDetector:
         self.facial_cue_snap_shot_and_reset()
         self.reset_data()
 
-
     def start_facial_cue_detector(self):
         self.running = True
-        capture = cv2.VideoCapture(0)
+        # Prefer DirectShow backend on Windows to avoid black frames
+        capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        if not capture.isOpened():
+            print("[ERROR] Camera index 0 failed to open with CAP_DSHOW. Trying index 1...")
+            capture.release()
+            capture = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        if not capture.isOpened():
+            print("[FATAL] Unable to open any camera (indices 0 or 1). Check permissions and availability.")
+            self.running = False
+            return
+
+        # Optional: set a reasonable resolution
+        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+        first_frame_logged = False
 
         while self.running:
             ret, frame = capture.read()
-            if not ret:
-                print("Can't receive frame (stream end?). Exiting ...")
+            if not ret or frame is None:
+                print("[ERROR] Can't receive frame (read returned False or None). Exiting loop...")
                 break
+            if not first_frame_logged:
+                try:
+                    h, w = frame.shape[:2]
+                    print(f"[INFO] Camera opened. Frame size: {w}x{h}")
+                except Exception:
+                    pass
+                first_frame_logged = True
 
             frame, face_landmarks = self.face_detector.detect_face_landmarks(frame)
             if face_landmarks:
@@ -165,6 +180,7 @@ class FacialCueDetector:
         capture.release()
         cv2.destroyAllWindows()
         self.face_detector.close()
+
 
     def facial_cue_snap_shot_and_reset(self):
         facial_cue_snap = self.facial_cues_data.copy()

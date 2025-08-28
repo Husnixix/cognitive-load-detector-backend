@@ -11,7 +11,6 @@ CORS(app)
 load_dotenv(find_dotenv())
 
 service = CognitiveLoadService()
-
 @app.post("/start")
 def start_detection():
     try:

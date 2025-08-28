@@ -1,10 +1,8 @@
 from app.domain.cognitive_load_detector import CognitiveLoadDetector
 
-
 class CognitiveLoadService:
     def __init__(self):
         self.cognitive_load_detector = CognitiveLoadDetector()
-
 
     def start_detection(self):
         self.cognitive_load_detector.start_detectors()

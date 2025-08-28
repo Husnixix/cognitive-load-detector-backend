@@ -29,11 +29,11 @@ class CognitiveLoadAlgorithm:
         if facial_cue_data["blink_counts"] <= low:
             self.cognitive_load["score"] += 0
         elif facial_cue_data["blink_counts"] <= medium:
-            self.cognitive_load["score"] += 50
+            self.cognitive_load["score"] += 75
         elif facial_cue_data["blink_counts"] <= high:
-            self.cognitive_load["score"] += 80
-        else:
             self.cognitive_load["score"] += 100
+        else:
+            self.cognitive_load["score"] += 0
 
         blink_score = self.cognitive_load["score"] * weights["blinking"]
         self.cognitive_load["score"] = 0
@@ -43,11 +43,11 @@ class CognitiveLoadAlgorithm:
         if facial_cue_data["yawn_counts"] <= low:
             self.cognitive_load["score"] += 0
         elif facial_cue_data["yawn_counts"] <= medium:
-            self.cognitive_load["score"] += 50
+            self.cognitive_load["score"] += 75
         elif facial_cue_data["yawn_counts"] <= high:
-            self.cognitive_load["score"] += 80
-        else:
             self.cognitive_load["score"] += 100
+        else:
+            self.cognitive_load["score"] += 0
 
         yawn_score = self.cognitive_load["score"] * weights["yawning"]
         self.cognitive_load["score"] = 0

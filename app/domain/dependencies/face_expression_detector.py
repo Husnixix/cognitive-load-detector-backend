@@ -1,5 +1,4 @@
 from deepface import DeepFace
-import cv2
 
 expression_counts = {
     "happy": 0,

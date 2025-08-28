@@ -1,5 +1,5 @@
 from typing import Optional, List
-from app.infrastructure.database.ConfigureDatabase import ConfigureDatabase
+from app.infrastructure.database.configure_database import ConfigureDatabase
 from app.infrastructure.entities.cognitive_load_entity import CognitiveState
 
 class CognitiveLoadRepository:

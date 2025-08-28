@@ -3,9 +3,7 @@ from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
 class ConfigureDatabase:
-    def __init__(self,
-                 uri=None,
-                 database_name=None):
+    def __init__(self,uri=None, database_name=None):
         self.client = None
         self.database = None
         try:

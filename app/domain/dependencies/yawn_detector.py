@@ -2,7 +2,7 @@ import math
 import cv2
 
 yawn_threshold = 0.5
-yawn_consec_frames = 15
+yawn_consec_frames = 12
 
 def extract_mouth_landmarks(face_landmarks, image_width, image_height):
     mouth_indices = [13, 14, 81, 178, 78, 308]
