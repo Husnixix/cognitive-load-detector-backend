@@ -49,9 +49,6 @@ class CognitiveLoadDetector:
             cognitive_score = self.algorithm.score_feature(facial_cue_data, keystroke_data)
             cognitive_state_data = self.algorithm.get_score_and_label(cognitive_score)
 
-            print(facial_cue_data)
-            print(keystroke_data)
-            print(cognitive_state_data)
             cognitive_state = CognitiveState(
                 start_time=start_time,
                 end_time=end_time,
