@@ -1,7 +1,7 @@
 import time
 from pynput import keyboard
 
-class KeystrokeAnalyzer:
+class KeystrokeDetector:
     def __init__(self):
         self.keystrokes = []
         self.mistakes = []
