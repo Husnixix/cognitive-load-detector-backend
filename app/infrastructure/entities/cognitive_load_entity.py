@@ -1,6 +1,15 @@
+import datetime
+from dataclasses import dataclass
 from typing import Optional
-from app.domain.entities.cognitive_state import CognitiveState
 
+@dataclass
+class CognitiveState:
+    start_time: datetime.datetime
+    end_time: datetime.datetime
+    facial_cue_data: dict
+    keystroke_data: dict
+    cognitive_state_data: dict
+    id: Optional[str] = None
 
 def cognitive_state_to_dict(state: CognitiveState) -> Optional[dict]:
     if state is None:

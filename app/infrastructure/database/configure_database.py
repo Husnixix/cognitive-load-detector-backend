@@ -2,15 +2,11 @@ import os
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
-
 class ConfigureDatabase:
-    def __init__(self,
-                 uri=None,
-                 database_name=None):
+    def __init__(self,uri=None, database_name=None):
         self.client = None
         self.database = None
         try:
-            # Read from env or explicit params. No hardcoded credentials.
             uri = uri or os.getenv("MONGODB_URI")
             database_name = database_name or os.getenv("MONGODB_DB")
 
