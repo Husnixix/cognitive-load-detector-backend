@@ -1,23 +1,31 @@
 import cv2
 from app.domain.dependencies.face_mesh_detector import FaceMeshDetector
-from app.domain.dependencies.blink_detector import extract_eye_landmarks, calculate_ear, draw_eye_outline, detect_blinks
+from app.domain.dependencies.blink_detector import (
+    extract_eye_landmarks, calculate_ear, draw_eye_outline, detect_blinks
+)
 from app.domain.dependencies.face_expression_detector import detect_expression
-from app.domain.dependencies.gaze_detector import (extract_iris_center, extract_iris_landmarks, analyze_gaze_for_eye,
-                                                   draw_iris_outline, draw_iris_center)
-from app.domain.dependencies.yawn_detector import extract_mouth_landmarks, calculate_mar, draw_mouth_state, detect_yawn
+from app.domain.dependencies.gaze_detector import (
+    extract_iris_center, extract_iris_landmarks, analyze_gaze_for_eye,
+    draw_iris_outline, draw_iris_center
+)
+from app.domain.dependencies.yawn_detector import (
+    extract_mouth_landmarks, calculate_mar, draw_mouth_state, detect_yawn
+)
 
-
+# ================= CONSTANTS =================
 TEXT_POSITIONS = {
     "blink": (10, 30),
     "yawn": (10, 60),
     "gaze": (10, 90),
-    "expression": (10, 120)
+    "expression": (10, 120),
+    "blink_count": (310, 30),
+    "yawn_count": (310, 60),
 }
 
 COLORS = {
     "ok": (0, 255, 0),
     "alert": (0, 0, 255),
-    "info": (255, 0, 0)
+    "info": (255, 0, 0),
 }
 
 
@@ -29,6 +37,7 @@ class FacialCueDetector:
         self.running = False
         self.reset_data()
 
+    # ================= CAMERA =================
     def _init_camera(self):
         capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         if not capture.isOpened():
@@ -72,8 +81,8 @@ class FacialCueDetector:
     def _process_frame(self, frame):
         frame, landmarks = self.face_detector.detect_face_landmarks(frame)
         if landmarks:
+            h, w, _ = frame.shape
             for lm in landmarks:
-                h, w, _ = frame.shape
                 frame = self._process_blinks(frame, lm, w, h)
                 frame = self._process_yawn(frame, lm, w, h)
                 frame = self._process_gaze(frame, lm, w, h)
@@ -84,16 +93,24 @@ class FacialCueDetector:
     def _process_blinks(self, frame, lm, w, h):
         right_eye, left_eye = extract_eye_landmarks(lm, w, h)
         right_ear, left_ear = calculate_ear(right_eye), calculate_ear(left_eye)
+
         draw_eye_outline(frame, right_eye)
         draw_eye_outline(frame, left_eye)
 
-        blink_detected, _, _ = detect_blinks(right_ear, left_ear, 0, 0)
+        blink_detected, self.blink_count_frames, self.blink_counts = detect_blinks(
+            right_ear, left_ear, self.blink_count_frames, self.blink_counts
+        )
+
         if blink_detected:
             self.facial_cues_data["blink_counts"] += 1
 
         cv2.putText(frame, f"Blink Detected: {blink_detected}",
                     TEXT_POSITIONS["blink"], cv2.FONT_HERSHEY_SIMPLEX, 0.6,
                     COLORS["alert"] if blink_detected else COLORS["ok"], 2)
+
+        cv2.putText(frame, f"Blink Count: {self.facial_cues_data['blink_counts']}",
+                    TEXT_POSITIONS["blink_count"], cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                    COLORS["info"], 2)
         return frame
 
     def _process_yawn(self, frame, lm, w, h):
@@ -101,13 +118,20 @@ class FacialCueDetector:
         mar = calculate_mar(mouth_points)
         draw_mouth_state(frame, mouth_points, mar)
 
-        _, _, yawn_detected = detect_yawn(mar, 0, 0)
+        self.yawn_count_frames, self.yawn_counts, yawn_detected = detect_yawn(
+            mar, self.yawn_count_frames, self.yawn_counts
+        )
+
         if yawn_detected:
             self.facial_cues_data["yawn_counts"] += 1
 
         cv2.putText(frame, f"Yawn Detected: {yawn_detected}",
                     TEXT_POSITIONS["yawn"], cv2.FONT_HERSHEY_SIMPLEX, 0.6,
                     COLORS["alert"] if yawn_detected else COLORS["ok"], 2)
+
+        cv2.putText(frame, f"Yawn Count: {self.facial_cues_data['yawn_counts']}",
+                    TEXT_POSITIONS["yawn_count"], cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                    COLORS["info"], 2)
         return frame
 
     def _process_gaze(self, frame, lm, w, h):
@@ -120,13 +144,13 @@ class FacialCueDetector:
                     COLORS["alert"] if gaze_direction in ["Left", "Right"] else COLORS["ok"], 2)
 
         if self.frame_count % self.gaze_sample_rate == 0:
-            self.facial_cues_data["gaze_direction_counts"][gaze_direction.lower() if gaze_direction else "no_gaze"] += 1
+            key = gaze_direction.lower() if gaze_direction in ["Left", "Right", "Center"] else "no_gaze"
+            self.facial_cues_data["gaze_direction_counts"][key] += 1
         self.frame_count += 1
 
-        draw_iris_outline(frame, left_iris)
-        draw_iris_outline(frame, right_iris)
-        draw_iris_center(frame, left_center)
-        draw_iris_center(frame, right_center)
+        for iris, center in [(left_iris, left_center), (right_iris, right_center)]:
+            draw_iris_outline(frame, iris)
+            draw_iris_center(frame, center)
         return frame
 
     def _process_expression(self, frame):
@@ -143,6 +167,13 @@ class FacialCueDetector:
 
     # ================= STATE MANAGEMENT =================
     def reset_data(self):
+        # internal counters
+        self.blink_counts = 0
+        self.blink_count_frames = 0
+        self.yawn_counts = 0
+        self.yawn_count_frames = 0
+        self.frame_count = 0
+
         self.facial_cues_data = {
             "blink_counts": 0,
             "yawn_counts": 0,
